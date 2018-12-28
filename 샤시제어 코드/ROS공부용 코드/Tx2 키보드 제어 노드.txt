@@ -1,0 +1,89 @@
+#include "ros/ros.h"
+#include "con_esc/MsgControl.h"
+//#include <curses.h>
+#include <cstdio>
+#include <termio.h> //for getch
+#define KEYDIR 27
+#define KEYMIDDLE 91
+#define LEFT 68
+#define RIGHT 67
+#define UP 65
+#define DOWN 66
+#define STOP 's'
+
+
+using namespace std;
+
+int getch(void){
+    int ch;
+    struct termios buf, save;
+    tcgetattr(0,&save);
+    buf = save;
+    buf.c_lflag &= ~(ICANON|ECHO);
+    buf.c_cc[VMIN] = 1;
+    buf.c_cc[VTIME] = 0;
+    tcsetattr(0, TCSAFLUSH, &buf);
+    ch = getchar();
+    tcsetattr(0, TCSAFLUSH, &save);
+    printf("%d\n",ch);
+    return ch;
+}
+
+int main(int argc,char **argv)
+{
+    ros::init(argc,argv,"talker"); // talker = 노드 이름, ros 이닛
+    ros::NodeHandle nh;// ros 핸들 선언
+    ros::Publisher talker = nh.advertise<con_esc::MsgControl>("ros_msg",100); // talker라는 퍼블리셔 변수 선언
+   									      // talker 퍼블리시 형식 객체의 퍼블리시 할 메세지의 토픽명은 ros_msg이다
+
+    con_esc::MsgControl msg; // ceon_esc 패키지의 msgControl 메세지 자료형의 msg 변수 선언
+    ros::Rate loop_rate(10); // 루프 대기 시간을 설정, sleep 함수와 조합되어 대기시간을 결정한다.
+    int c;// 입력값 변수 설정
+    while(true)
+    {
+        printf("into while\n");
+        
+        //while((c = getch())!=224){
+          c = getch();
+          if(c == KEYDIR)
+          {
+			    printf("correct special key\n");
+              c = getch();
+              if(c != KEYMIDDLE)
+                  continue;
+              c = getch();
+              switch(c)
+              {
+                  case LEFT://왼쪽 방향키가 입력되면
+                      msg.data = LEFT; // msg의 data 변수에 LEFT 값 대입
+                      talker.publish(msg); // talker 형식의 객체에 publish 함수를 사용하여 msg 변수를 퍼블리시하기 (앞서 선언한 talker 변수는 ros_msg의 토픽명을 가지고 있음 )
+                      ROS_INFO("send msg= %d", msg.data); // 보낸 메세지 내용을 출력
+                      break; 
+                  case RIGHT:
+                      msg.data = RIGHT;
+                      talker.publish(msg);
+                      ROS_INFO("send msg= %d", msg.data);
+                      break;
+                  case UP:
+                      msg.data = UP;
+                      talker.publish(msg);
+                      ROS_INFO("send msg= %d", msg.data);
+                      break;
+                  case DOWN:
+                      msg.data = DOWN;
+                      talker.publish(msg);
+                      ROS_INFO("send msg= %d", msg.data);
+                      break;
+		  case 's':
+			msg.data = (int)STOP;
+			talker.publish(msg);
+			ROS_INFO("send msg= %d", msg.data);
+                        break;
+                  default:
+                      break;
+              }
+          }
+       //}
+    }
+    return 0;
+}

@@ -1,0 +1,54 @@
+float PID_saturate(float input, float min, float max);
+ 
+float PID_iterate(float target_value, float current_value, float current_input) {
+    //PID environment variable
+    static const float Kp = 1;
+    static const float Ki = 1;
+    static const float Kd = 1;
+    static float dT = 0.1; //make sure not 0
+    static const float min = 0.0f;
+    static const float max = 255.0f;
+    
+    //PID calculate term
+    float P_term = 0.0f;
+    static float I_term = 0.0f;
+    float D_term = 0.0f;
+
+    float error = 0.0f; //P
+    static float error_prev = 0.0f; //D
+    
+    // output term
+    float output = 0.0f;
+    
+    // calculate error
+    error = target_value - current_value;
+    
+    // calculate PID term
+    P_term = Kp * error;
+    I_term += Ki * error * dT;
+    D_term = Kd * (error - error_prev)/dT;    
+    I_term = PID_saturate(I_term, min, max);
+    
+    // prepare for next call
+    error_prev = error;
+    
+    // return output
+    output = P_term + I_term + D_term;
+    output = PID_saturate(output, min, max);
+    return output;
+}
+ 
+float PID_saturate(float input, float min, float max) {
+    float saturated_value = input;
+    if (input < min){
+        saturated_value = min;
+    } 
+    else if (max < input) {
+        saturated_value = max;
+    }
+    
+    return saturated_value;
+}
+
+
+ÃâÃ³: http://naudhizb.tistory.com/745 [Brise]

@@ -1,0 +1,31 @@
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <pigpio.h>
+//gcc -Wall -pthread -o PWMFORWARD PWMFORWARD.c -lpigpio -lrt
+//=build command
+
+int main()
+{
+
+
+	if(gpioInitialise()<0) return -1; // pigpio 라이브러리 이니시
+
+gpioSetMode(17,PI_OUTPUT); // GPIO 17번핀 사용 설정
+gpioSetPWMfrequency(17,40); // 주파수 40Hz로 설정
+gpioSetPWMrange(17,400); // 분주비 255->400 변환
+
+gpioPWM(17, 24); // 6% 듀티비 인가 (24/255)=0.06
+
+int A = gpioGetPWMrange(17); // 분주비 출력
+int B = gpioGetPWMdutycycle(17); //듀티값 출력
+int C = gpioGetPWMfrequency(17); // 현재 주파수 출력
+printf("rage : %d\n",A);
+printf("duty cycle : %d\n",B);
+printf("frequency : %d\n",C);
+
+while(1)
+{}
+return 0;
+
+}

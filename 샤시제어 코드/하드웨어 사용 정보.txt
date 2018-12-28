@@ -1,0 +1,72 @@
+[라즈베리파이3]
+
+GPIO 17번 : ESC 제어용 전후진 PWM 파형 생성
+
+         * 설정값 : 주파수 40Hz, Range 4000
+
+	
+    (중립)정지 : (듀티 6%) PWMvalue = 240
+	  전진 : PWMvalue = 247~260 (무부하에서 DC 모터 작동 최소 PWMvalue가 247)
+	  후진 : PWMvalue = 220~233
+
+
+
+GPIO 18번 : 조향 제어 서보모터 제어용 PWM 파형 생성
+	   
+	 * 설정값 : 주파수 50Hz, Range 3600
+
+	  서보모터 동작 듀티비 => T=20ms, 5~10% (0degree ~ 180degree)
+
+   (좌향)  degree 0'  : (듀티 5%) PWMvalue = 180
+   (중립)  degree 90' : (듀티 7.5%) PWMvalue = 270
+   (우향)  degree 180' : (듀티 10%) PWMvalue = 360
+
+
+	   (서보모터가 x도를 가지게 만들려면 PWMvalue = 180 + x 해주면 됨)
+
+
+
+******************************************************
+[하드웨어 연결 정보]
+
+Pi3 GPIO18 <->서보모터 펄스핀 (하얀선)
+
+Pi3 GPIO17 <-> ESC 펄스핀 (하얀선)
+
+Pi3 GND <-> 모형차량 배터리 GND
+
+ESC Vcc <-> 서보모터 Vcc
+
+ESC GND <-> 서보모터 GND
+*******************************************************
+[pigpio 라이브러리 정보]
+
+//pigpio 라이브러리 시작 (코드 맨 앞에 써줘야함)
+if(gpioInitialise()<0) return -1;
+
+//GPIO_pin_number 을 OUTPUT으로 설정
+gpioSetMode(int GPIO_pin_number,PI_OUTPUT)
+
+//GPIO_pin_number 핀의 PWM 주파수를 F로 설정 (Hz 단위)
+gpioSetPWMfrequency(int GPIO_pin_number,int F);
+
+
+//PWM의 최대 Range를 'R'으로 설정, 25-40000 까지 설정 가능
+gpioSetPWMrange(int GPIO_pin_number, int R);
+
+
+
+//PWMvalue 만큼의 듀티를 가진 PWM 출력 시작
+gpioPWM(int GPIO_pin_number, int PWMvalue)
+
+
+
+//GPIO_pin_number 핀에 설정된 최대 PWM range 정보 획득
+gpioGetPWMrange(int GPIO_pin_number)
+
+//GPIO_pin_number 핀에 설정된 PWM duty 정보 획득
+gpioGetPWMdutycycle(int GPIO_pin_number)
+
+//GPIO_pin_number 핀에 설정된 주파수 정보 획득
+gpioGetPWMfrequency(int GPIO_pin_number)
+

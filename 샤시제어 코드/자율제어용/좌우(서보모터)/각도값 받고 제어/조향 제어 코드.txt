@@ -1,0 +1,64 @@
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <pigpio.h>
+
+int main()
+{
+	if(gpioInitialise()<0) return -1;
+
+gpioSetMode(18,PI_OUTPUT);
+gpioSetPWMfrequency(18,50);
+gpioSetPWMrange(18,3600);
+
+////////////////// 위로는 셋팅
+////////////////// 아래로는 제어
+
+int receivedegree = 0; // 수신값
+int objectdegree = 0; // 목표값
+int error = objectdegree-receivedegree; //에러
+
+int U = 0; //조작량각도
+int AbsU= 0; // 절대 각도
+
+int Kp=1; // P 계수
+int Ki=1; // I 계수
+int Kd=1; // D 계수
+int P=0;
+int I=0;
+int D=0;
+int PWMvalue = 0;
+
+//***********PID 값 연산부분*******
+P = Kp*error;
+// I= 만들어야함
+// D=  만들어야함
+
+U = P+I+D; //조작해야 할 각도
+//******************************
+
+AbsU = 90+U; // 중립을 기준으로 -10도로 조작해야한다면 서보모터의 절대각도는 80도
+PWMvalue = 180+AbsU; //절대각을 현재 range에 맞는 입력해야 할 PWMvalue값으로 환산
+
+gpioPWM(18, PWMvalue);//PWM값 인가
+
+
+////////////////////////////////////
+int A = gpioGetPWMrange(18);
+int B = gpioGetPWMdutycycle(18);
+int C = gpioGetPWMfrequency(18);
+printf("rage : %d\n",A);
+printf("duty cycle : %d\n",B);
+printf("frequency : %d\n",C);
+
+
+while(1)
+{}
+return 0;
+
+}
+
+//// 서보모터 각도 정보
+//// PWMvalue = 180 -> 0도
+//// PWMvalue = 270 -> 90도
+//// PWMvalue = 360 -> 180도
